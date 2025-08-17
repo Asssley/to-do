@@ -1,63 +1,89 @@
-import { Router, Request, Response } from "express";
+import { Request, Response } from "express";
+import { User } from "../../../models/User";
 import { Task } from "../../../models/Task";
 
-const items: Task[] = [];
+export const users: User[] = [
+  {
+    userId: "1",
+    login: "qwe",
+    password: "123",
+    taskList: [
+      {
+        id: "101",
+        text: "do something finaly!",
+        checked: false
+      }
+    ]
+  }
+];
 
 export const getItems = (req: Request, res: Response) => {
-  res.json({ items });
+  if (req.user) {
+    res.json(req.user.taskList);
+  }
+
+  res.json(req.session.taskList);
 }
 
 export const addItem = (req: Request, res: Response) => {
   try {
-    let newItem: Task = new Task(req.body.text);
-  
-    items.push(newItem);
-    res.json({
-      id: items[items.length - 1].id
-    });
+    const newTask: Task = new Task(req.body.text);
+
+    if (req.user) {
+      req.user.taskList.push(newTask);
+    } else {
+      req.session.taskList.push(newTask);
+    }
+
+    res.json({ id: newTask.id });
   } catch (err) {
-    res.status(400).json({
-      "error": "Invalid object"
-    })
+    res.status(400).json({ msg: "Bad request" });
   }
 }
 
 export const editItem = (req: Request, res: Response) => {
-  let reqTask = req.body;
-  let task = items.find((item) => item.id === reqTask.id);
+  try {
+    const reqTask = req.body;
+    let task: Task | undefined;
 
-  if (task) {
-    if (reqTask.text) task.text = reqTask.text;
-    if (reqTask.checked) task.checked = reqTask.checked;
-    res.json({
-      "ok": true
-    });
-  }
-  else {
-    res.status(400).json({
-      "error": "Bad request"
-    });
+    if (req.user) {
+      task = req.user.taskList.find((item) => item.id === reqTask.id);
+    } else {
+      task = req.session.taskList.find((item) => item.id === reqTask.id);
+    }
+
+    if (task) {
+      if (reqTask.text) task.text = reqTask.text;
+      if (reqTask.checked) task.checked = reqTask.checked;
+      res.json({ msg: "Success" });
+    }
+    else {
+      res.status(404).json({ msg: "Not found" });
+    }
+  } catch (err) {
+    res.status(400).json({ msg: "Bad request" });
   }
 }
 
 export const deleteItem = (req: Request, res: Response) => {
-  let id: number = req.body.id;
-  
-  if (id === undefined) {
-    res.status(400).json({
-      "error": "Bad request"
-    });
-  }
+  const id: string = req.body.id;
 
-  let index = items.findIndex((item) => item.id === id);
-  if (index >= 0) {
-    items.splice(index, 1);
-    res.json({
-      "ok": true
-    });
+  let index: number;
+
+  if (req.user) {
+    index = req.user.taskList.findIndex((item) => item.id === id);
+
+    if (index >= 0) {
+      req.user.taskList.splice(index, 1);
+      res.json({ msg: "Success" });
+    };
   } else {
-    res.json({
-      "ok": false
-    });
+    index = req.session.taskList.findIndex((item) => item.id === id);
+
+    if (index >= 0) {
+      req.session.taskList.splice(index, 1);
+      res.json({ msg: "Success" });
+    }
   }
+  res.status(404).json({ msg: "Not found" });
 }

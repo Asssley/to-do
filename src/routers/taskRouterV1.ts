@@ -1,7 +1,7 @@
-import express, { Router } from "express";
+import { Router } from "express";
 import { getItems, addItem, editItem, deleteItem } from "../controllers/api/v1/tasksController";
 
-export let taskRouter: Router = express.Router();
+export const taskRouter: Router = Router();
 
 taskRouter.get("/api/v1/items", getItems);
 

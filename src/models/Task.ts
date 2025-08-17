@@ -1,22 +1,14 @@
+import { generateId } from "../utils/generateId";
+
 export class Task {
-  public id: number;
+  public id: string;
   public text: string;
   public checked: boolean = false;
 
-  private static lastId: number = 0;
-
-  constructor(text: string, checked?: boolean, id?: number) {
+  constructor(text: string) {
     this.text = text;
-    if (checked !== undefined) {
-      this.checked = checked;
-    }
-    if (id !== undefined) {
-      this.id = id;
-    }
-    else {
-      this.id = Task.lastId;
-      Task.lastId++;
-    }
+    this.id = generateId();
   }
 
 }
+
