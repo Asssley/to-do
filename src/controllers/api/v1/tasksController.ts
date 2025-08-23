@@ -17,31 +17,37 @@ export const users: User[] = [
   }
 ];
 
-export const getItems = (req: Request, res: Response) => {
+export const getItems = (req: Request, res: Response): void => {
   if (req.user) {
-    res.json(req.user.taskList);
+    res.json({ items: req.user.taskList });
+    return;
   }
 
-  res.json(req.session.taskList);
+  res.json({ items: req.session.taskList || []});
+  return;
 }
 
-export const addItem = (req: Request, res: Response) => {
+export const addItem = (req: Request, res: Response): void => {
   try {
     const newTask: Task = new Task(req.body.text);
 
     if (req.user) {
       req.user.taskList.push(newTask);
     } else {
+      if (!req.session.taskList) req.session.taskList = [];
       req.session.taskList.push(newTask);
     }
 
-    res.json({ id: newTask.id });
+    res.status(201).send({ id: newTask.id });
+    return;
   } catch (err) {
-    res.status(400).json({ msg: "Bad request" });
+    console.log(err);
+    res.status(400).send({ error: "Bad request" });
+    return;
   }
 }
 
-export const editItem = (req: Request, res: Response) => {
+export const editItem = (req: Request, res: Response): void => {
   try {
     const reqTask = req.body;
     let task: Task | undefined;
@@ -49,23 +55,27 @@ export const editItem = (req: Request, res: Response) => {
     if (req.user) {
       task = req.user.taskList.find((item) => item.id === reqTask.id);
     } else {
+      if (!req.session.taskList) req.session.taskList = [];
       task = req.session.taskList.find((item) => item.id === reqTask.id);
     }
 
     if (task) {
-      if (reqTask.text) task.text = reqTask.text;
-      if (reqTask.checked) task.checked = reqTask.checked;
-      res.json({ msg: "Success" });
+      if (reqTask.hasOwnProperty("text")) task.text = reqTask.text;
+      if (reqTask.hasOwnProperty("checked")) task.checked = reqTask.checked;
+      res.status(200).send({ ok: true });
+      return;
     }
     else {
-      res.status(404).json({ msg: "Not found" });
+      res.status(404).send({ error: "Not found" });
+      return;
     }
   } catch (err) {
-    res.status(400).json({ msg: "Bad request" });
+    res.status(500).send({ error: "Internal server error" });
+    return;
   }
 }
 
-export const deleteItem = (req: Request, res: Response) => {
+export const deleteItem = (req: Request, res: Response): void => {
   const id: string = req.body.id;
 
   let index: number;
@@ -75,15 +85,24 @@ export const deleteItem = (req: Request, res: Response) => {
 
     if (index >= 0) {
       req.user.taskList.splice(index, 1);
-      res.json({ msg: "Success" });
-    };
+      res.status(200).send({ ok: true });
+      return;
+    } else {
+      res.status(404).send({ error: "Not found" });
+      return;
+    }
+
   } else {
+    if (!req.session.taskList) req.session.taskList = [];
     index = req.session.taskList.findIndex((item) => item.id === id);
 
     if (index >= 0) {
       req.session.taskList.splice(index, 1);
-      res.json({ msg: "Success" });
+      res.status(200).send({ ok: true });
+      return;
+    } else {
+      res.status(404).send({ error: "Not found" });
+      return;
     }
   }
-  res.status(404).json({ msg: "Not found" });
 }

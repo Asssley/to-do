@@ -13,13 +13,13 @@
   "license": "ISC",
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
     "@types/session-file-store": "^1.2.5",
     "nodemon": "^3.1.10",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@types/express": "^5.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",

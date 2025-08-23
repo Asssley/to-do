@@ -3,6 +3,8 @@ import { taskRouter as taskRouterV1 } from "./routers/taskRouterV1";
 import cors from "cors";
 import session from "express-session";
 import FileStoreFactory from "session-file-store";
+import { authRouterV1 } from "./routers/authRouterV1";
+import { authenticateUser } from "./middlewares/authMidleware";
 
 let PORT = 3000;
 
@@ -26,9 +28,13 @@ app.use(cors({
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/api/v1/status", (req, res) => {
   res.sendStatus(200);
 });
+
+app.use(authRouterV1);
+
+app.use(authenticateUser);
 
 app.use(taskRouterV1);
 
