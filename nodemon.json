@@ -1,5 +1,6 @@
 {
   "execMap": {
       "ts": "npm run build && npm run start"
-  }
+    },
+  "ignore": ["sessions/"]
 }
