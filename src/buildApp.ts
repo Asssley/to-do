@@ -14,7 +14,7 @@ export function buildApp(): Express {
   app.use(
     session({
       store: new FileStore({ path: "./sessions" }),
-      secret: "DVKn8ksv2al654MNKSlvmsLS23KvmDsl324sCMSLK",
+      secret: process.env.SESSION_KEY ?? "DjcnjkscnDKJ938nfcmdq",
       resave: false,
       saveUninitialized: true
     })
