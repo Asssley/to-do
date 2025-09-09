@@ -3,6 +3,10 @@ import { getItems, addItem, editItem, deleteItem } from "../controllers/api/v1/t
 
 export const taskRouter: Router = Router();
 
+taskRouter.get("/api/v1/status", (req, res) => {
+  res.sendStatus(200);
+});
+
 taskRouter.get("/api/v1/items", getItems);
 
 taskRouter.post("/api/v1/items", addItem);

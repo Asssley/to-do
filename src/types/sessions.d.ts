@@ -1,13 +1,12 @@
 import { Session } from 'express-session';
-import { Task } from '../models/Task';
-import { User } from '../models/User';
+import { Task } from '../repositories/Task';
+import { User } from '../repositories/User';
 
 declare module 'express-serve-static-core' {
   interface Request {
     session: Session & {
       userId?: string,
       taskList: Task[]
-    },
-    user?: User
+    }
   }
 }

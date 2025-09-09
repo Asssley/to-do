@@ -1,16 +1,23 @@
 import { Request, Response } from "express";
-import { User } from "../../../models/User";
-import { users } from "./tasksController";
+import { UserRepository } from "../../../repositories/userRepository";
+import { IUser } from "../../../db/types/IUser";
+import { TaskRepository } from "../../../repositories/taskRepository";
+import { ObjectId } from "mongodb";
 
-export const register = function (req: Request, res: Response): void {
+export const register = async function (req: Request, res: Response): Promise<void> {
   try {
     const { login, password } = req.body;
-    const newUser = new User(login, password);
 
-    newUser.taskList = [...(req.session.taskList ?? [])];
+    const newUser: IUser = {
+      login: login,
+      password: password,
+      taskList: [...(req.session.taskList ?? [])]
+    };
+
+    const newUserId = await UserRepository.addUser(newUser);
+
     req.session.taskList = [];
-    req.session.userId = newUser.userId;
-    users.push(newUser);
+    req.session.userId = newUserId?.toString();
 
     res.status(200).send({ ok: true });
     return;
@@ -21,17 +28,19 @@ export const register = function (req: Request, res: Response): void {
   }
 }
 
-export const login = function (req: Request, res: Response): void {
+export const login = async function (req: Request, res: Response): Promise<void> {
   try {
     const { login, password } = req.body;
-    const user = users.find(user => {
-      return user.login === login
-        && user.password === password;
-    });
+    
+    const user = await UserRepository.getUserByLogin(login, password);
   
     if (user) {
-      req.session.userId = user.userId;
-      user.taskList = [...user.taskList, ...(req.session.taskList ?? [])];
+      req.session.userId = user._id?.toString();
+      if (req.session.taskList) {
+        for (let task of req.session.taskList) {
+          TaskRepository.addTask(user._id as ObjectId, task)
+        }
+      }
       res.status(200).send({ ok: true });
       return;
     }
@@ -45,7 +54,7 @@ export const login = function (req: Request, res: Response): void {
   }
 }
 
-export const logout = function (req: Request, res: Response): void {
+export const logout = async function (req: Request, res: Response): Promise<void> {
   if (!req.session) {
     res.clearCookie("connect.sid");
     res.status(404).send({ error: "Session not found" });
