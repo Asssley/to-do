@@ -4,7 +4,7 @@ import { addItem, deleteItem, editItem, getItems } from "../controllers/api/v1/t
 
 export const router: Router = Router();
 
-router.get("/api/v2/router ",
+router.get("/api/v2/router",
   (req: Request, res: Response) => {
     switch (req.query.action) {
       case "login":
@@ -30,3 +30,7 @@ router.get("/api/v2/router ",
         break;
     }
   });
+
+router.get("/api/v2/status", (req, res) => {
+  res.sendStatus(200);
+});
