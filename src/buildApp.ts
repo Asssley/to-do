@@ -9,7 +9,7 @@ import { router as mainRouterV2 } from "./routers/mainRouterV2";
 export function buildApp(): Express {
   const app: Express = express()
   const FileStore = FileStoreFactory(session);
-  const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split("") || [];
+  const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(" ") || [];
 
   app.use(
     session({
